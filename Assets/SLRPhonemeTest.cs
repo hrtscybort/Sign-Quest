@@ -18,12 +18,7 @@ public class SLRPhonemeTest : MonoBehaviour
     private bool init;
 
     private int frame = 0;
-    private List<string> levelSigns = new List<string>
-    {
-        "water",
-        "mom",
-        "dad"
-    };
+    private List<string> levelSigns = new List<string>();
 
     void Update()
     {
@@ -31,6 +26,12 @@ public class SLRPhonemeTest : MonoBehaviour
             if(!init) {
                 // where initialization goes
                 Debug.Log("Added Callback");
+
+                string[] currentVocab = battleSystem.GetVocabForCurrentWave();
+                levelSigns.Clear();
+                levelSigns.AddRange(currentVocab);
+                Debug.Log("Level Signs: " + string.Join(", ", levelSigns));
+
                 engine.recognizer.outputFilters.Clear();
                 engine.recognizer.outputFilters.Add(new Thresholder<string>(0.1f));
                 engine.recognizer.outputFilters.Add(new FocusSublistFilter<string>(levelSigns));

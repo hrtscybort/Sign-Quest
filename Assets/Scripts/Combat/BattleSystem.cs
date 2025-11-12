@@ -43,7 +43,9 @@ namespace Assets.Scripts.Combat
 
         [SerializeField] private SignPromptUI SignUI;
         public SignPromptUI signUI => SignUI;
-        public string[] vocab = {"water", "mom", "dad"};
+        [SerializeField] private TextAsset vocabJsonFile;
+        private LevelData[] allLevelsData;
+        public string[] vocab = {};
 
         #endregion
 
@@ -61,6 +63,7 @@ namespace Assets.Scripts.Combat
             SetState(new Begin(this));
 
             Interface.ShowTutorial();
+            LoadVocabData();
 
             if (startBattleButton != null)
             {
@@ -70,6 +73,48 @@ namespace Assets.Scripts.Combat
             {
                 Debug.LogError("Start Battle Button is not assigned in the Inspector!");
             }
+        }
+
+// BattleSystem.cs (Updated LoadVocabData method)
+    private void LoadVocabData()
+    {
+        if (vocabJsonFile != null)
+        {
+            string jsonText = vocabJsonFile.text;
+            string wrappedJson = "{\"Levels\":" + jsonText + "}";
+            
+            VocabDataWrapper wrapper = JsonUtility.FromJson<VocabDataWrapper>(wrappedJson);
+            allLevelsData = wrapper.Levels;
+
+            if (allLevelsData != null && allLevelsData.Length > 0)
+            {
+                Debug.Log($"Successfully loaded {allLevelsData.Length} vocabulary levels from {vocabJsonFile.name}.");
+            }
+            else
+            {
+                Debug.LogError("Failed to parse vocabulary data or data is empty. Check JSON format.");
+            }
+        }
+        else
+        {
+            Debug.LogError("Vocab JSON file is not assigned in the Inspector!");
+        }
+    }
+
+        public string[] GetVocabForCurrentWave()
+        {
+            if (allLevelsData == null) return new string[0];
+
+            foreach (var level in allLevelsData)
+            {
+                if (level.level == currentWave)
+                {
+                    return level.words;
+                }
+            }
+            
+            Debug.LogWarning($"No vocab found for wave {currentWave}. Returning empty list.");
+            return new string[0];
         }
 
         private void SetupWave()
@@ -92,6 +137,7 @@ namespace Assets.Scripts.Combat
             {
                 enemy = currentWaveEnemies[currentEnemyIndex];
                 Enemy.Reset();
+                vocab = GetVocabForCurrentWave();
             }
         }
 
