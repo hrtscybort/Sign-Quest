@@ -5900,7 +5900,9 @@ MonoBehaviour:
   FeedbackMessagePrefab: {fileID: 6321610357114469300, guid: 2bdab498a68024670b3b8b093d904968, type: 3}
   PlayerHeadTransform: {fileID: 250357228}
   data: {fileID: 2047898485}
+  manager: {fileID: 1030179327}
   SignUI: {fileID: 92358694}
+  vocabJsonFile: {fileID: 4900000, guid: 485a12f390bdb410c8c557c860671d33, type: 3}
   vocab:
   - water
   - mom
