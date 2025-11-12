@@ -38,9 +38,9 @@ public class SignPromptUI : MonoBehaviour
 
     public void Show(string word)
     {
+        wordText.text = word;
         gameObject.SetActive(true);
         IsDone = false;
-        wordText.text = word;
     }
 
     public void Finish(float score)
