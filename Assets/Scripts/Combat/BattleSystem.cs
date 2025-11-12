@@ -74,32 +74,30 @@ namespace Assets.Scripts.Combat
                 Debug.LogError("Start Battle Button is not assigned in the Inspector!");
             }
         }
-
-// BattleSystem.cs (Updated LoadVocabData method)
-    private void LoadVocabData()
-    {
-        if (vocabJsonFile != null)
+        private void LoadVocabData()
         {
-            string jsonText = vocabJsonFile.text;
-            string wrappedJson = "{\"Levels\":" + jsonText + "}";
-            
-            VocabDataWrapper wrapper = JsonUtility.FromJson<VocabDataWrapper>(wrappedJson);
-            allLevelsData = wrapper.Levels;
-
-            if (allLevelsData != null && allLevelsData.Length > 0)
+            if (vocabJsonFile != null)
             {
-                Debug.Log($"Successfully loaded {allLevelsData.Length} vocabulary levels from {vocabJsonFile.name}.");
+                string jsonText = vocabJsonFile.text;
+                string wrappedJson = "{\"Levels\":" + jsonText + "}";
+                
+                VocabDataWrapper wrapper = JsonUtility.FromJson<VocabDataWrapper>(wrappedJson);
+                allLevelsData = wrapper.Levels;
+
+                if (allLevelsData != null && allLevelsData.Length > 0)
+                {
+                    Debug.Log($"Successfully loaded {allLevelsData.Length} vocabulary levels from {vocabJsonFile.name}.");
+                }
+                else
+                {
+                    Debug.LogError("Failed to parse vocabulary data or data is empty. Check JSON format.");
+                }
             }
             else
             {
-                Debug.LogError("Failed to parse vocabulary data or data is empty. Check JSON format.");
+                Debug.LogError("Vocab JSON file is not assigned in the Inspector!");
             }
         }
-        else
-        {
-            Debug.LogError("Vocab JSON file is not assigned in the Inspector!");
-        }
-    }
 
         public string[] GetVocabForCurrentWave()
         {
@@ -141,6 +139,20 @@ namespace Assets.Scripts.Combat
             }
         }
 
+        public void ChooseAndShowWord()
+        {
+            if (vocab.Length > 0)
+            {
+                string wordToSign = vocab[Random.Range(0, vocab.Length)];
+                signUI.Show(wordToSign);
+                Debug.Log($"Chosen word for signing: {wordToSign}");
+            }
+            else
+            {
+                Debug.LogError("Vocabulary list is empty for the current wave! Cannot choose word.");
+            }
+        }
+
         public void OnEnemyDefeated()
         {
             currentEnemyIndex++;
@@ -158,11 +170,13 @@ namespace Assets.Scripts.Combat
         
         public void OnAttackButton()
         {
+            ChooseAndShowWord();
             StartCoroutine(State.Attack());
         }
 
         public void OnHealButton()
         {
+            ChooseAndShowWord();
             StartCoroutine(State.Heal());
         }
 
@@ -173,6 +187,7 @@ namespace Assets.Scripts.Combat
 
         public void OnDefendButton()
         {
+            ChooseAndShowWord();
             StartCoroutine(State.Defend());
         }
 

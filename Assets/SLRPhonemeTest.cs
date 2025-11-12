@@ -84,23 +84,27 @@ public class SLRPhonemeTest : MonoBehaviour
             bool correctLocation = signsDatabase.CorrectLocation;
             
             Debug.Log($"Processing sign: {result.gloss}");
-            
-            if (isCorrectWord)
-            {
-                int correctFields = signsDatabase.CountCorrectFields(result);
-                float score = correctFields / 2f;
 
-                if (signUI.tutorialPressed) {
-                    battleSystem.signUI.Finish(0.1f);
-                }
-                else {
-                    battleSystem.signUI.Finish(score);
-                }
-            }
-            else
+        if (isCorrectWord)
+        {
+            int correctFields = signsDatabase.CountCorrectFields(result);
+            float score = correctFields / 2f;
+
+            if (signUI.tutorialPressed)
             {
                 battleSystem.signUI.Finish(0.1f);
             }
+            else
+            {
+                battleSystem.signUI.Finish(score);
+            }
+        }
+        else
+        {
+            battleSystem.signUI.Finish(0.1f);
+        }
+            
+        battleSystem.signUI.Hide();
         }
     // }
 }
