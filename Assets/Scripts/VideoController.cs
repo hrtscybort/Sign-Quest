@@ -5,9 +5,9 @@ using TMPro;
 
 public class VideoController : MonoBehaviour
 {
-    [SerializeField] private VideoClip[] wave1Videos;
-    [SerializeField] private VideoClip[] wave2Videos;
-    [SerializeField] private VideoClip[] wave3Videos;
+    // [SerializeField] private VideoClip[] wave1Videos;
+    // [SerializeField] private VideoClip[] wave2Videos;
+    // [SerializeField] private VideoClip[] wave3Videos;
     [SerializeField] private VideoPlayer videoPlayer;
     [SerializeField] private Button nextButton;
     [SerializeField] private Button prevButton;
@@ -28,22 +28,29 @@ public class VideoController : MonoBehaviour
     public void UpdateVideoForWave(int wave)
     {
         currWave = wave;
+        string video_folder = $"level_{currWave}";
+        currWaveVideos = Resources.LoadAll<VideoClip>(video_folder);
         
-        switch (currWave)
+        if (currWaveVideos == null || currWaveVideos.Length == 0)
         {
-            case 1:
-                currWaveVideos = wave1Videos;
-                break;
-            case 2:
-                currWaveVideos = wave2Videos;
-                break;
-            case 3:
-                currWaveVideos = wave3Videos;
-                break;
-            default:
-                Debug.LogWarning("No videos available for this wave.");
-                return;
-        }
+            Debug.LogWarning("Counldn't find videos for Resources/" + video_folder);
+            return;
+        } 
+        // switch (currWave)
+        // {
+        //     case 1:
+        //         currWaveVideos = wave1Videos;
+        //         break;
+        //     case 2:
+        //         currWaveVideos = wave2Videos;
+        //         break;
+        //     case 3:
+        //         currWaveVideos = wave3Videos;
+        //         break;
+        //     default:
+        //         Debug.LogWarning("No videos available for this wave.");
+        //         return;
+        // }
         
         currVideoIndex = 0;
         PlayCurrVideo();

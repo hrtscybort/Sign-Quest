@@ -11,8 +11,8 @@ public class SignPromptUI : MonoBehaviour
     [SerializeField] private Button referenceButton;
     [SerializeField] private VideoClip[] tutorialVideos;
     [SerializeField] private VideoPlayer video;
+
     public TMP_Text WordText => wordText;
-    
     public bool IsDone { get; private set; }
     public float Score { get; private set; }
     private bool TutorialPressed = false;
