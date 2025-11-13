@@ -33,8 +33,7 @@ namespace Assets.Scripts.Combat
 
     public IEnumerator PerformSignedAction(string actionType)
     {
-        currentActionWord = BattleSystem.vocab[UnityEngine.Random.Range(0, BattleSystem.vocab.Length)];
-        BattleSystem.signUI.Show(currentActionWord);
+        BattleSystem.signUI.Show(BattleSystem.GetPseudoRandomWord());
         waitingForSign = true;
 
         while (!BattleSystem.signUI.IsDone)

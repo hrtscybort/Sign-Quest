@@ -35,7 +35,7 @@ public class SLRPhonemeTest : MonoBehaviour
                 engine.recognizer.outputFilters.Clear();
                 engine.recognizer.outputFilters.Add(new Thresholder<string>(0.1f));
                 engine.recognizer.outputFilters.Add(new FocusSublistFilter<string>(levelSigns));
-                Debug.Log(battleSystem.signUI.WordText.text);
+                // Debug.Log(battleSystem.signUI.WordText.text);
                 engine.recognizer.AddCallback("print", pred => {
                     Debug.Log("Got Pred: " + pred);
                     if (pred.gloss != "None") {
