@@ -1,4 +1,4 @@
-using System.Collections;
+using System.Collections.Generic;
 using Assets.Scripts.UI;
 using UnityEngine;
 using UnityEngine.UI;
@@ -32,6 +32,7 @@ namespace Assets.Scripts.Combat
         private int currentEnemyIndex = 0;
         private Fighter[] currentWaveEnemies;
         private GamePhase currentPhase = GamePhase.Tutorial;
+        private List<string> unusedVocab = new List<string>();
 
         public Fighter Player => player;
         public Fighter Enemy => enemy;
@@ -127,6 +128,7 @@ namespace Assets.Scripts.Combat
             }
 
             currentWaveEnemies[2] = BossType;
+            unusedVocab.Clear();
         }
 
         public void InitializeEnemy()
@@ -139,18 +141,30 @@ namespace Assets.Scripts.Combat
             }
         }
 
-        public void ChooseAndShowWord()
+        public string GetPseudoRandomWord()
         {
-            if (vocab.Length > 0)
+            if (unusedVocab.Count == 0)
             {
-                string wordToSign = vocab[Random.Range(0, vocab.Length)];
-                signUI.Show(wordToSign);
-                Debug.Log($"Chosen word for signing: {wordToSign}");
+                vocab = GetVocabForCurrentWave();
+                if (vocab.Length > 0)
+                {
+                    unusedVocab.AddRange(vocab);
+                    Debug.Log("Vocab pool refreshed with all wave words.");
+                }
+                else
+                {
+                    Debug.LogError("Vocabulary list is empty for the current wave! Cannot choose word.");
+                }
             }
-            else
-            {
-                Debug.LogError("Vocabulary list is empty for the current wave! Cannot choose word.");
-            }
+
+            int randomIndex = Random.Range(0, unusedVocab.Count);
+            string wordToSign = unusedVocab[randomIndex];
+            
+            unusedVocab.RemoveAt(randomIndex);
+            
+            Debug.Log($"Chosen word for signing: {wordToSign}. Remaining unused: {unusedVocab.Count}");
+
+            return wordToSign;
         }
 
         public void OnEnemyDefeated()
@@ -170,13 +184,11 @@ namespace Assets.Scripts.Combat
         
         public void OnAttackButton()
         {
-            ChooseAndShowWord();
             StartCoroutine(State.Attack());
         }
 
         public void OnHealButton()
         {
-            ChooseAndShowWord();
             StartCoroutine(State.Heal());
         }
 
@@ -187,7 +199,6 @@ namespace Assets.Scripts.Combat
 
         public void OnDefendButton()
         {
-            ChooseAndShowWord();
             StartCoroutine(State.Defend());
         }
 

@@ -12,28 +12,26 @@ public class SignPromptUI : MonoBehaviour
     [SerializeField] private VideoClip[] tutorialVideos;
     [SerializeField] private VideoPlayer video;
 
+    [SerializeField] private BattleSystem battleSystem;
+
     public TMP_Text WordText => wordText;
     public bool IsDone { get; private set; }
     public float Score { get; private set; }
     private bool TutorialPressed = false;
     public bool tutorialPressed => TutorialPressed;
 
+
     private void Start()
     {
         TutorialPressed = false;
 
         referenceButton.onClick.AddListener(Reference);
+        referenceVideo.SetActive(false);
 
-        foreach (var clip in tutorialVideos)
-        {
-            if (clip.name.Equals(wordText.text, System.StringComparison.OrdinalIgnoreCase))
-            {
-                video.clip = clip;
-                video.Play();
-                break;
-            }
-        }
+        int currWave = battleSystem.CurrentWave;
 
+        string video_folder = $"level_{currWave}";
+        tutorialVideos = Resources.LoadAll<VideoClip>(video_folder);
     }
 
     public void Show(string word)
@@ -41,6 +39,8 @@ public class SignPromptUI : MonoBehaviour
         wordText.text = word;
         gameObject.SetActive(true);
         IsDone = false;
+
+        referenceVideo.SetActive(false);
     }
 
     public void Finish(float score)
@@ -56,6 +56,18 @@ public class SignPromptUI : MonoBehaviour
 
     public void Reference()
     {
+        foreach (var clip in tutorialVideos)
+        {
+            if (clip.name.Equals(wordText.text, System.StringComparison.OrdinalIgnoreCase))
+            {
+                video.clip = clip;
+                video.Play();
+
+                Debug.Log("Current video" + clip.name);
+                break;
+            }
+        }
+
         referenceVideo.SetActive(true);
         TutorialPressed = true;
     }

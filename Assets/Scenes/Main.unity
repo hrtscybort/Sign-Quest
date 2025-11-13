@@ -312,11 +312,9 @@ MonoBehaviour:
   wordText: {fileID: 277508306}
   referenceVideo: {fileID: 2072903664}
   referenceButton: {fileID: 314784495}
-  tutorialVideos:
-  - {fileID: 32900000, guid: 64f919a3fd76a8c409deb04d3b8a13c2, type: 3}
-  - {fileID: 32900000, guid: f2c404f0f298d9342b1525f1e30b2f78, type: 3}
-  - {fileID: 32900000, guid: 818ed81e62ac9c84a9bfc15edb93c4a3, type: 3}
+  tutorialVideos: []
   video: {fileID: 1517666224}
+  battleSystem: {fileID: 1773890701}
 --- !u!114 &92358695
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4964,22 +4962,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae40e30d70bdd424a9afc96ae7b7fb7e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wave1Videos:
-  - {fileID: 32900000, guid: 64f919a3fd76a8c409deb04d3b8a13c2, type: 3}
-  - {fileID: 32900000, guid: f2c404f0f298d9342b1525f1e30b2f78, type: 3}
-  - {fileID: 32900000, guid: 818ed81e62ac9c84a9bfc15edb93c4a3, type: 3}
-  wave2Videos:
-  - {fileID: 32900000, guid: ee27258d1d1e4ed459d50dfe800f66df, type: 3}
-  - {fileID: 32900000, guid: 90567dd11940f084abf45cc588df93b7, type: 3}
-  - {fileID: 32900000, guid: 8612e180844e2a8489fc96e2ab3a64a2, type: 3}
-  - {fileID: 32900000, guid: db6e9e281af2f654e86ab8c6a3ab6c17, type: 3}
-  - {fileID: 32900000, guid: 1d045c3e9c545cf4881aaa31bfef1c00, type: 3}
-  wave3Videos:
-  - {fileID: 32900000, guid: bc9a071da6f713747a807b0905eb0b86, type: 3}
-  - {fileID: 32900000, guid: 0e9bcd47b407ffb419be07a562e44a6b, type: 3}
-  - {fileID: 32900000, guid: 9988d10499fb8c744b25d4a13f746e0e, type: 3}
-  - {fileID: 32900000, guid: 73ff626176c9d0b43a7e6ecf18345175, type: 3}
-  - {fileID: 32900000, guid: a7d429b40b377b24383c26d8448727d1, type: 3}
   videoPlayer: {fileID: 1797000783}
   nextButton: {fileID: 1252936478}
   prevButton: {fileID: 609006719}
