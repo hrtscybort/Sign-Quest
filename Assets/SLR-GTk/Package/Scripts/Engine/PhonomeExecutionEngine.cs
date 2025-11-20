@@ -5,6 +5,8 @@ using Mediapipe.Tasks.Vision.HandLandmarker;
 using Model;
 using Newtonsoft.Json;
 using System;
+using System.IO;
+using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -130,6 +132,8 @@ namespace Engine {
                     return;
                 }
 
+                SaveDataAsCSV("landmark_data_csv", "landmark_data.csv", interpolatedInput);
+
                 //Debug.Log("Input array got " + inputArray.Count);
 
                 if (inputArray.Count > 0)
@@ -224,6 +228,71 @@ namespace Engine {
             }
 
             return linearlyInterpolatedLandmarks;
+        }
+
+        // fileName must have .csv (lowercase) as the file extension.
+        private void SaveDataAsCSV(string path, string fileName, List<float> frameData)
+        {
+            int expectedFrameDataSize = Config.NumInputFrames * Config.NumInputPoints * 2;
+            if (frameData.Count != expectedFrameDataSize)
+            {
+                Debug.Log($"Expected frame data of length {expectedFrameDataSize} but got {frameData.Count}");
+                return;
+            }
+
+            if (!fileName.EndsWith(".csv"))
+            {
+                Debug.Log("Expected a *.csv file extension for the file type.");
+                return;
+            }
+
+            string directory = Path.Combine(Application.persistentDataPath, path);
+            string filePath = Path.Combine(directory, fileName);
+
+            StringBuilder dataString = new StringBuilder();
+
+            // CSV Header
+            dataString.Append("frame");
+
+            for (int i = 0; i < Config.NumInputPoints; i++)
+            {
+                dataString.Append($",landmark_{i}_x");
+                dataString.Append($",landmark_{i}_y");
+            }
+
+            dataString.AppendLine();
+
+            int frameSize = Config.NumInputPoints * 2;
+            // CSV Datapoints
+            for (int frame = 0; frame < Config.NumInputFrames; frame++)
+            {
+                // Frame #
+                dataString.Append($"{frame}");
+
+                for (int landmark = 0; landmark < Config.NumInputPoints; landmark++)
+                {
+                    int landmarkIndex = frame * frameSize + (landmark * 2);
+
+                    // Landmark x-coordinate
+                    dataString.Append($",{frameData[landmarkIndex]}");
+
+                    // Landmark y-coordinate
+                    dataString.Append($",{frameData[landmarkIndex + 1]}");
+                }
+
+                dataString.AppendLine();
+            }
+
+            try
+            {
+                Directory.CreateDirectory(directory);
+                File.WriteAllText(filePath, dataString.ToString());
+                Debug.Log($"Successfully saved data at: {filePath}");
+            } 
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to save csv to {filePath}: {e.Message}");
+            }
         }
     }
 }
