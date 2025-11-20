@@ -136,9 +136,9 @@ namespace Engine {
 
                 //Debug.Log("Input array got " + inputArray.Count);
 
-                if (inputArray.Count > 0)
+                if (interpolatedInput.Count > 0)
                 {
-                    recognizer.RunModel(inputArray.ToArray());
+                    recognizer.RunModel(interpolatedInput.ToArray());
                 }
                 buffer.Clear();
             });
