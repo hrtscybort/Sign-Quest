@@ -1,14 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Common;
+using Mediapipe;
+using Mediapipe.Tasks.Components.Containers;
 using Mediapipe.Tasks.Vision.HandLandmarker;
 using Model;
+using Newtonsoft.Json;
+using System;
+using System.IO;
+using System.Text;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using TMPro;
+using TreeEditor;
+using Unity.VisualScripting.Antlr3.Runtime.Tree;
 using UnityEngine;
 using UnityEngine.Serialization;
 using RunningMode = Mediapipe.Tasks.Vision.Core.RunningMode;
-using Newtonsoft.Json;
 
 namespace Engine {
     public class PhonemeExecutionEngine : MonoBehaviour
@@ -94,11 +101,13 @@ namespace Engine {
                     else
                         Debug.Log("Got null screen");
             });
+
             buffer.AddCallback("trigger", bufferedResults =>
             {
                 List<float> inputArray = new List<float>();
 
                 if (bufferedResults.Count <= 0) return;
+                
                 
                 if (bufferedResults.Count >= 80)
                 {
@@ -109,18 +118,27 @@ namespace Engine {
                     {
                         for (int j = 0; j < Config.NumInputPoints; j++)
                         {
-
                             inputArray.Add(1 - landmark.handLandmarks[0].landmarks[j].x);
                             inputArray.Add(1 - landmark.handLandmarks[0].landmarks[j].y);
                         }
                     }
                 }
-                
+
+                List<float> interpolatedInput = TemporalLinearInterpolateFrames(inputArray);
+                int expectedInputSize = Config.NumInputFrames * Config.NumInputPoints * 2;
+                if (interpolatedInput.Count != expectedInputSize)
+                {
+                    Debug.LogError($"Expected {expectedInputSize} entries for input array but got {interpolatedInput.Count} entries.");
+                    return;
+                }
+
+                SaveDataAsCSV("landmark_data_csv", "landmark_data.csv", interpolatedInput);
+
                 //Debug.Log("Input array got " + inputArray.Count);
 
-                if (inputArray.Count > 0)
+                if (interpolatedInput.Count > 0)
                 {
-                    recognizer.RunModel(inputArray.ToArray());
+                    recognizer.RunModel(interpolatedInput.ToArray());
                 }
                 buffer.Clear();
             });
@@ -159,6 +177,128 @@ namespace Engine {
                 words[i] = words[i].ToLower();
             }
             return words;
+        }
+
+        // Implementated with reference to PyTorch's implementation of torch.nn.functional.interpolate function.
+        private List<float> TemporalLinearInterpolateFrames(List<float> inputArray)
+        {
+            int frameSize = Config.NumInputPoints * 2;
+            if (inputArray.Count < frameSize * 2)
+            {
+                Debug.LogError("Not enough data was provided to perform temporal interpolation.");
+                return inputArray;
+            }
+
+            if (inputArray.Count % frameSize != 0)
+            {
+                Debug.LogError($"Invalid input size for interpolation. Array must contain data in sizes of {frameSize}.");
+                return inputArray;
+            }
+
+            List<float> linearlyInterpolatedLandmarks = new List<float>();
+
+            int inputFrames = inputArray.Count / frameSize;
+            float interpolationSpacing = ((float)inputFrames) / Config.NumInputFrames;
+
+            for (int frame = 0; frame < Config.NumInputFrames; frame++)
+            {
+                // Given current frame, referenceFrame calculates which frame to interpolate off of
+                float referenceFrame = (frame + 0.5f) * interpolationSpacing - 0.5f;
+                if (referenceFrame < 0) { referenceFrame = 0; }
+                if (referenceFrame > inputFrames - 1) { referenceFrame = inputFrames - 1; }
+
+                int curFrameIndex = Mathf.FloorToInt(referenceFrame);
+                int nextFrameIndex = (curFrameIndex < inputFrames - 1) ? curFrameIndex + 1 : curFrameIndex ;
+                
+                int curFrameLandmarkRange = curFrameIndex * frameSize;
+                int nextFrameLandmarkRange = nextFrameIndex * frameSize;
+
+                float t = referenceFrame - curFrameIndex;
+
+                for (int landmark = 0; landmark < frameSize; landmark += 2)
+                {
+                    float xInitial = inputArray[curFrameLandmarkRange + landmark];
+                    float yInitial = inputArray[curFrameLandmarkRange + landmark + 1];
+
+                    float xFinal = inputArray[nextFrameLandmarkRange + landmark];
+                    float yFinal = inputArray[nextFrameLandmarkRange + landmark + 1];
+
+                    float xLerp = (1 - t) * xInitial + t * xFinal;
+                    float yLerp = (1 - t) * yInitial + t * yFinal;
+
+                    linearlyInterpolatedLandmarks.Add(xLerp);
+                    linearlyInterpolatedLandmarks.Add(yLerp);
+                }
+
+                Debug.Log($"Linearly interpolated frame: {frame + 1} / {Config.NumInputFrames}");
+            }
+
+            return linearlyInterpolatedLandmarks;
+        }
+
+        // fileName must have .csv (lowercase) as the file extension.
+        private void SaveDataAsCSV(string path, string fileName, List<float> frameData)
+        {
+            int expectedFrameDataSize = Config.NumInputFrames * Config.NumInputPoints * 2;
+            if (frameData.Count != expectedFrameDataSize)
+            {
+                Debug.Log($"Expected frame data of length {expectedFrameDataSize} but got {frameData.Count}");
+                return;
+            }
+
+            if (!fileName.EndsWith(".csv"))
+            {
+                Debug.Log("Expected a *.csv file extension for the file type.");
+                return;
+            }
+
+            string directory = Path.Combine(Application.persistentDataPath, path);
+            string filePath = Path.Combine(directory, fileName);
+
+            StringBuilder dataString = new StringBuilder();
+
+            // CSV Header
+            dataString.Append("frame");
+
+            for (int i = 0; i < Config.NumInputPoints; i++)
+            {
+                dataString.Append($",landmark_{i}_x");
+                dataString.Append($",landmark_{i}_y");
+            }
+
+            dataString.AppendLine();
+
+            int frameSize = Config.NumInputPoints * 2;
+            // CSV Datapoints
+            for (int frame = 0; frame < Config.NumInputFrames; frame++)
+            {
+                // Frame #
+                dataString.Append($"{frame}");
+
+                for (int landmark = 0; landmark < Config.NumInputPoints; landmark++)
+                {
+                    int landmarkIndex = frame * frameSize + (landmark * 2);
+
+                    // Landmark x-coordinate
+                    dataString.Append($",{frameData[landmarkIndex]}");
+
+                    // Landmark y-coordinate
+                    dataString.Append($",{frameData[landmarkIndex + 1]}");
+                }
+
+                dataString.AppendLine();
+            }
+
+            try
+            {
+                Directory.CreateDirectory(directory);
+                File.WriteAllText(filePath, dataString.ToString());
+                Debug.Log($"Successfully saved data at: {filePath}");
+            } 
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to save csv to {filePath}: {e.Message}");
+            }
         }
     }
 }
