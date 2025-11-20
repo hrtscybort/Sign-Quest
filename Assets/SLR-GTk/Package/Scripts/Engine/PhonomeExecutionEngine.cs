@@ -183,9 +183,15 @@ namespace Engine {
         private List<float> TemporalLinearInterpolateFrames(List<float> inputArray)
         {
             int frameSize = Config.NumInputPoints * 2;
+            if (inputArray.Count < frameSize * 2)
+            {
+                Debug.LogError("Not enough data was provided to perform temporal interpolation.");
+                return inputArray;
+            }
+
             if (inputArray.Count % frameSize != 0)
             {
-                Debug.Log($"Invalid input size for interpolation. Array must contain data in sizes of {frameSize}.");
+                Debug.LogError($"Invalid input size for interpolation. Array must contain data in sizes of {frameSize}.");
                 return inputArray;
             }
 
